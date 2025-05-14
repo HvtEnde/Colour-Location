@@ -545,8 +545,9 @@ GameObject:
   - component: {fileID: 1697269713}
   - component: {fileID: 1697269712}
   - component: {fileID: 1697269716}
+  - component: {fileID: 1697269717}
   m_Layer: 0
-  m_Name: Blauw
+  m_Name: Object
   m_TagString: SonarTarget
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -632,7 +633,7 @@ Transform:
   m_GameObject: {fileID: 1697269711}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -17.9, y: 1.326, z: -36.1}
+  m_LocalPosition: {x: -47.58, y: 1.326, z: -22.45}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -661,7 +662,7 @@ AudioSource:
   MinDistance: 1
   MaxDistance: 500
   Pan2D: 0
-  rolloffMode: 1
+  rolloffMode: 0
   BypassEffects: 0
   BypassListenerEffects: 0
   BypassReverbZones: 0
@@ -734,6 +735,22 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1697269717
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1697269711}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6eabf8857b3ab134d98eeb2824a93331, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sonarOrigin: {fileID: 1765707870}
+  speed: 2
+  minDistance: 1
+  maxDistance: 75
 --- !u!1 &1765707866
 GameObject:
   m_ObjectHideFlags: 0
@@ -748,7 +765,7 @@ GameObject:
   - component: {fileID: 1765707867}
   - component: {fileID: 1765707871}
   m_Layer: 0
-  m_Name: Cube
+  m_Name: OriginPoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -849,19 +866,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 1765707866}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ec28a7496083d8440aa4fbaab9362df4, type: 3}
+  m_Script: {fileID: 11500000, guid: fc0c3ecb2535b7d409b5bdb095a5a986, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   sonarOrigin: {fileID: 1765707870}
-  targetTag: SonarTarget
   pulseSpeed: 10
-  pulseRepeatRate: 10
-  maxDistance: 50
-  sequenceClips:
-  - {fileID: 8300000, guid: 25786b25b4de86d4fb93f05c5b410019, type: 3}
-  - {fileID: 8300000, guid: b2d4300ec3f2271498fa4c82df50a295, type: 3}
-  - {fileID: 8300000, guid: c35f88f43109e954baa3401fceab7dbb, type: 3}
+  pulseRepeatRate: 120
+  maxDistance: 100
+  clipPrimair: {fileID: 8300000, guid: 25786b25b4de86d4fb93f05c5b410019, type: 3}
+  clipSecundair: {fileID: 8300000, guid: b2d4300ec3f2271498fa4c82df50a295, type: 3}
+  clipTertiair: {fileID: 8300000, guid: c35f88f43109e954baa3401fceab7dbb, type: 3}
   sequenceClipDelay: 0.5
+  doubleTapTime: 0.3
 --- !u!1 &1903601234
 GameObject:
   m_ObjectHideFlags: 0
@@ -875,8 +891,9 @@ GameObject:
   - component: {fileID: 1903601236}
   - component: {fileID: 1903601235}
   - component: {fileID: 1903601239}
+  - component: {fileID: 1903601240}
   m_Layer: 0
-  m_Name: Oranje
+  m_Name: 'Object '
   m_TagString: SonarTarget
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -962,7 +979,7 @@ Transform:
   m_GameObject: {fileID: 1903601234}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -76.73, y: 1.326, z: -33.98}
+  m_LocalPosition: {x: -48.33, y: 1.326, z: -16.15}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -991,7 +1008,7 @@ AudioSource:
   MinDistance: 1
   MaxDistance: 500
   Pan2D: 0
-  rolloffMode: 1
+  rolloffMode: 0
   BypassEffects: 0
   BypassListenerEffects: 0
   BypassReverbZones: 0
@@ -1064,6 +1081,22 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1903601240
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1903601234}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6eabf8857b3ab134d98eeb2824a93331, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sonarOrigin: {fileID: 1765707870}
+  speed: 2
+  minDistance: 1
+  maxDistance: 75
 --- !u!1 &1965505033
 GameObject:
   m_ObjectHideFlags: 0
@@ -1077,8 +1110,9 @@ GameObject:
   - component: {fileID: 1965505035}
   - component: {fileID: 1965505034}
   - component: {fileID: 1965505038}
+  - component: {fileID: 1965505039}
   m_Layer: 0
-  m_Name: Roze
+  m_Name: Object
   m_TagString: SonarTarget
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1164,7 +1198,7 @@ Transform:
   m_GameObject: {fileID: 1965505033}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -59.58, y: 1.326, z: 2.49}
+  m_LocalPosition: {x: -48.8, y: 1.326, z: -8.7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1193,7 +1227,7 @@ AudioSource:
   MinDistance: 1
   MaxDistance: 500
   Pan2D: 0
-  rolloffMode: 1
+  rolloffMode: 0
   BypassEffects: 0
   BypassListenerEffects: 0
   BypassReverbZones: 0
@@ -1266,6 +1300,22 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1965505039
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1965505033}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6eabf8857b3ab134d98eeb2824a93331, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sonarOrigin: {fileID: 1765707870}
+  speed: 2
+  minDistance: 1
+  maxDistance: 75
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
