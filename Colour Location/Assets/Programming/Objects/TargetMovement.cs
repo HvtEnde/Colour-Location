@@ -14,6 +14,11 @@ public class TargetMovement : MonoBehaviour
     private bool isMovingOutward;
     private float fixedY; // Fixed Y position for horizontal plane
 
+    public void Start()
+    {
+        Initialize();
+    }
+
     public void Initialize()
     {
         if (sonarOrigin == null) return;

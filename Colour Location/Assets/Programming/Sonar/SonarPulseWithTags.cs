@@ -5,40 +5,48 @@ using System.Collections.Generic;
 public class SonarPulseWithTags : MonoBehaviour
 {
     [Header("Sonar Settings")]
-    [SerializeField] private Transform sonarOrigin; // Origin of the sonar pulse
-    [SerializeField] private float pulseSpeed = 10f; // Speed of the pulse (units/sec)
-    [SerializeField] private float pulseRepeatRate = 5f; // Pulse repeat interval (sec)
-    [SerializeField] private float maxDistance = 100f; // Max pulse distance
-
-    [Header("Audio Clips")]
-    [SerializeField] private AudioClip clipPrimair; // Clip for 'Primair' tag
-    [SerializeField] private AudioClip clipSecundair; // Clip for 'Secundair' tag
-    [SerializeField] private AudioClip clipTertiair; // Clip for 'Tertiair' tag
+    [SerializeField] private Transform sonarOrigin;
+    [SerializeField] private float pulseSpeed = 10f;
+    [SerializeField] private float pulseRepeatRate = 5f;
+    [SerializeField] private float maxDistance = 50f;
 
     [Header("Sequence Settings")]
-    [SerializeField] private float sequenceClipDelay = 0.5f; // Delay between sequence clips
-    [SerializeField] private float doubleTapTime = 0.3f; // Double-tap time window
+    [SerializeField] private List<AudioClip> basePart1Clips;
+    [SerializeField] private List<AudioClip> basePart2Clips;
+    [SerializeField] private float sequenceClipDelay = 0.5f;
 
-    private AudioSource cameraAudioSource; // AudioSource for sequence playback
-    private AudioClip[] sequenceClips; // Clips for the sequence
-    private float lastXPressTime = -1f; // For double-tap detection
+    [Header("Tag Audio Clips")]
+    [SerializeField] private AudioClip clipPrimair1;
+    [SerializeField] private AudioClip clipPrimair2;
+    [SerializeField] private AudioClip clipSecundair1;
+    [SerializeField] private AudioClip clipSecundair2;
+    [SerializeField] private AudioClip clipTertiair1;
+    [SerializeField] private AudioClip clipTertiair2;
+
+    private AudioSource cameraAudioSource;
 
     private void Start()
     {
+        // Validate required components and assets
         if (sonarOrigin == null)
         {
             Debug.LogError("SonarOrigin not set!");
             return;
         }
-        if (clipPrimair == null || clipSecundair == null || clipTertiair == null)
+        if (basePart1Clips.Count < 3 || basePart2Clips.Count < 3)
         {
-            Debug.LogError("Please assign all three clips!");
+            Debug.LogError("Each base part must have at least 3 audio clips!");
+            return;
+        }
+        if (clipPrimair1 == null || clipPrimair2 == null ||
+            clipSecundair1 == null || clipSecundair2 == null ||
+            clipTertiair1 == null || clipTertiair2 == null)
+        {
+            Debug.LogError("Please assign all tag audio clips!");
             return;
         }
 
-        sequenceClips = new AudioClip[] { clipPrimair, clipSecundair, clipTertiair };
-
-        // Setup AudioSource for sequence
+        // Setup cameraAudioSource for sequence
         cameraAudioSource = GetComponent<AudioSource>();
         if (cameraAudioSource == null)
         {
@@ -46,70 +54,46 @@ public class SonarPulseWithTags : MonoBehaviour
         }
         cameraAudioSource.spatialBlend = 0f; // 2D sound for sequence
 
-        // Initialize targets
-        InitializeTargets();
+        // Assign clips to targets based on their tags
+        AssignClipsToTargets();
 
-        // Assign tags and clips to targets
-        AssignTagsAndClipsToTargets();
-
-        // Start sequence and pulse
+        // Start sequence and sonar pulse
         StartCoroutine(PlaySequenceAndStartPulse());
     }
 
-    private void Update()
-    {
-        // Double-tap detection for X key
-        if (Input.GetKeyDown(KeyCode.X))
-        {
-            float timeSinceLastPress = Time.time - lastXPressTime;
-            if (timeSinceLastPress < doubleTapTime)
-            {
-                StartCoroutine(PlaySequence());
-            }
-            lastXPressTime = Time.time;
-        }
-    }
-
-    private void InitializeTargets()
-    {
-        GameObject[] targets = GameObject.FindGameObjectsWithTag("SonarTarget");
-        foreach (GameObject target in targets)
-        {
-            TargetMovement movement = target.GetComponent<TargetMovement>();
-            if (movement == null)
-            {
-                movement = target.AddComponent<TargetMovement>();
-            }
-            movement.sonarOrigin = sonarOrigin;
-            movement.speed = 2f;
-            movement.minDistance = 10f;
-            movement.maxDistance = maxDistance;
-            movement.Initialize();
-        }
-    }
-
-    private void AssignTagsAndClipsToTargets()
+    private void AssignClipsToTargets()
     {
         string[] tags = new string[] { "Primair", "Secundair", "Tertiair" };
-        GameObject[] targets = GameObject.FindGameObjectsWithTag("SonarTarget");
-        foreach (GameObject target in targets)
+        foreach (string tag in tags)
         {
-            int randomIndex = Random.Range(0, 3);
-            string selectedTag = tags[randomIndex];
-            target.tag = selectedTag;
-            AudioSource audioSource = target.GetComponent<AudioSource>();
-            if (audioSource != null)
+            GameObject[] targets = GameObject.FindGameObjectsWithTag(tag);
+            AudioClip[] clips;
+            if (tag == "Primair")
+                clips = new AudioClip[] { clipPrimair1, clipPrimair2 };
+            else if (tag == "Secundair")
+                clips = new AudioClip[] { clipSecundair1, clipSecundair2 };
+            else
+                clips = new AudioClip[] { clipTertiair1, clipTertiair2 };
+
+            foreach (GameObject target in targets)
             {
-                if (selectedTag == "Primair")
-                    audioSource.clip = clipPrimair;
-                else if (selectedTag == "Secundair")
-                    audioSource.clip = clipSecundair;
-                else if (selectedTag == "Tertiair")
-                    audioSource.clip = clipTertiair;
-                audioSource.spatialBlend = 1f; // 3D sound
-                audioSource.minDistance = 1f;
-                audioSource.maxDistance = maxDistance;
-                audioSource.rolloffMode = AudioRolloffMode.Logarithmic; // Changed to Logarithmic
+                AudioSource[] sources = target.GetComponents<AudioSource>();
+                if (sources.Length < 2)
+                {
+                    for (int i = sources.Length; i < 2; i++)
+                    {
+                        target.AddComponent<AudioSource>();
+                    }
+                    sources = target.GetComponents<AudioSource>();
+                }
+                for (int i = 0; i < 2; i++)
+                {
+                    sources[i].clip = clips[i];
+                    sources[i].spatialBlend = 1f; // 3D sound for tag clips
+                    sources[i].minDistance = 1f;
+                    sources[i].maxDistance = maxDistance;
+                    sources[i].rolloffMode = AudioRolloffMode.Logarithmic;
+                }
             }
         }
     }
@@ -123,9 +107,11 @@ public class SonarPulseWithTags : MonoBehaviour
 
     private IEnumerator PlaySequence()
     {
-        List<AudioClip> sequence = new List<AudioClip>(sequenceClips);
-        Shuffle(sequence);
-        foreach (AudioClip clip in sequence)
+        List<AudioClip> sequenceClips = new List<AudioClip>();
+        sequenceClips.AddRange(basePart1Clips);
+        sequenceClips.AddRange(basePart2Clips);
+        Shuffle(sequenceClips);
+        foreach (AudioClip clip in sequenceClips)
         {
             cameraAudioSource.clip = clip;
             cameraAudioSource.Play();
@@ -154,35 +140,32 @@ public class SonarPulseWithTags : MonoBehaviour
             {
                 targets.AddRange(GameObject.FindGameObjectsWithTag(tag));
             }
-            List<AudioSource> audioSources = new List<AudioSource>();
             foreach (GameObject target in targets)
             {
                 float distance = Vector3.Distance(sonarOrigin.position, target.transform.position);
                 if (distance <= maxDistance)
                 {
-                    AudioSource audioSource = target.GetComponent<AudioSource>();
-                    if (audioSource != null)
+                    AudioSource[] sources = target.GetComponents<AudioSource>();
+                    if (sources.Length >= 2)
                     {
-                        audioSources.Add(audioSource);
+                        float delay = distance / pulseSpeed;
+                        StartCoroutine(PlaySoundsWithDelay(sources, delay));
                     }
                 }
-            }
-            foreach (AudioSource audioSource in audioSources)
-            {
-                float distance = Vector3.Distance(sonarOrigin.position, audioSource.transform.position);
-                float delay = distance / pulseSpeed;
-                StartCoroutine(PlaySoundWithDelay(audioSource, delay));
             }
             yield return new WaitForSeconds(pulseRepeatRate);
         }
     }
 
-    private IEnumerator PlaySoundWithDelay(AudioSource audioSource, float delay)
+    private IEnumerator PlaySoundsWithDelay(AudioSource[] sources, float delay)
     {
         yield return new WaitForSeconds(delay);
-        if (audioSource != null && !audioSource.isPlaying)
+        foreach (AudioSource source in sources)
         {
-            audioSource.Play();
+            if (source != null && !source.isPlaying)
+            {
+                source.Play();
+            }
         }
     }
 }
