@@ -11,8 +11,8 @@ public class SonarPulseWithTags : MonoBehaviour
     [SerializeField] private float maxDistance = 50f;
 
     [Header("Sequence Settings")]
-    [SerializeField] private List<AudioClip> basePart1Clips;
-    [SerializeField] private List<AudioClip> basePart2Clips;
+    [SerializeField] private List<AudioClip> basePart1Clips = new List<AudioClip>();
+    [SerializeField] private List<AudioClip> basePart2Clips = new List<AudioClip>();
     [SerializeField] private float sequenceClipDelay = 0.5f;
 
     [Header("Tag Audio Clips")]
@@ -27,6 +27,9 @@ public class SonarPulseWithTags : MonoBehaviour
 
     private void Start()
     {
+        basePart1Clips.AddRange(Resources.LoadAll<AudioClip>("BasePart1"));
+        basePart2Clips.AddRange(Resources.LoadAll<AudioClip>("BasePart2"));
+
         // Validate required components and assets
         if (sonarOrigin == null)
         {
@@ -90,8 +93,6 @@ public class SonarPulseWithTags : MonoBehaviour
                 {
                     sources[i].clip = clips[i];
                     sources[i].spatialBlend = 1f; // 3D sound for tag clips
-                    sources[i].minDistance = 1f;
-                    sources[i].maxDistance = maxDistance;
                     sources[i].rolloffMode = AudioRolloffMode.Logarithmic;
                 }
             }
@@ -133,6 +134,8 @@ public class SonarPulseWithTags : MonoBehaviour
     private IEnumerator PulseRoutine()
     {
         string[] sonarTags = new string[] { "Primair", "Secundair", "Tertiair" };
+        float minInterval = 0.2f; // Adjust as needed, in seconds
+
         while (true)
         {
             List<GameObject> targets = new List<GameObject>();
@@ -140,8 +143,18 @@ public class SonarPulseWithTags : MonoBehaviour
             {
                 targets.AddRange(GameObject.FindGameObjectsWithTag(tag));
             }
-            foreach (GameObject target in targets)
+
+            // Sort targets by distance
+            targets.Sort((a, b) =>
+                Vector3.Distance(sonarOrigin.position, a.transform.position)
+                .CompareTo(Vector3.Distance(sonarOrigin.position, b.transform.position))
+            );
+
+            float lastDelay = 0f;
+
+            for (int i = 0; i < targets.Count; i++)
             {
+                GameObject target = targets[i];
                 float distance = Vector3.Distance(sonarOrigin.position, target.transform.position);
                 if (distance <= maxDistance)
                 {
@@ -149,7 +162,12 @@ public class SonarPulseWithTags : MonoBehaviour
                     if (sources.Length >= 2)
                     {
                         float delay = distance / pulseSpeed;
-                        StartCoroutine(PlaySoundsWithDelay(sources, delay));
+
+                        // Ensure minimum interval between triggers
+                        delay = Mathf.Max(delay, lastDelay + minInterval);
+                        lastDelay = delay;
+
+                        StartCoroutine(PlaySoundsSequentially(sources, delay));
                     }
                 }
             }
@@ -157,15 +175,26 @@ public class SonarPulseWithTags : MonoBehaviour
         }
     }
 
-    private IEnumerator PlaySoundsWithDelay(AudioSource[] sources, float delay)
+
+    private IEnumerator PlaySoundsSequentially(AudioSource[] sources, float delay)
     {
         yield return new WaitForSeconds(delay);
-        foreach (AudioSource source in sources)
+
+        if (sources.Length >= 2)
         {
-            if (source != null && !source.isPlaying)
+            // Play the first source
+            if (sources[0] != null)
             {
-                source.Play();
+                sources[0].Play();
+                yield return new WaitForSeconds(sources[0].clip.length);
+            }
+            // Play the second source
+            if (sources[1] != null)
+            {
+                sources[1].Play();
             }
         }
     }
+
+
 }
