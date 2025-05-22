@@ -12,40 +12,30 @@ public class TargetMovement : MonoBehaviour
     private float r_max;
     private float r;
     private bool isMovingOutward;
-    private float fixedY; // Fixed Y position for horizontal plane
-
-    public void Start()
-    {
-        Initialize();
-    }
+    private float fixedY;
+    private bool isStopped = false;
 
     public void Initialize()
     {
         if (sonarOrigin == null) return;
-
-        // Set direction on XZ plane (horizontal only)
         dir = new Vector3(Random.Range(-1f, 1f), 0, Random.Range(-1f, 1f)).normalized;
-
-        // Store the initial Y position of sonar origin
         fixedY = sonarOrigin.position.y;
-
-        // Set distance bounds
         r_min = Random.Range(minDistance, maxDistance - 50f);
         r_max = r_min + 50f;
-
-        // Initialize distance r
         r = Random.Range(r_min, r_max);
         isMovingOutward = r < (r_min + r_max) / 2f;
-
-        // Set initial position on the horizontal plane
         transform.position = new Vector3(sonarOrigin.position.x + r * dir.x, fixedY, sonarOrigin.position.z + r * dir.z);
+    }
+
+    private void Start()
+    {
+        Initialize();
     }
 
     private void Update()
     {
-        if (sonarOrigin == null) return;
+        if (sonarOrigin == null || isStopped) return;
 
-        // Update distance r based on direction
         if (isMovingOutward)
         {
             r += speed * Time.deltaTime;
@@ -65,10 +55,16 @@ public class TargetMovement : MonoBehaviour
             }
         }
 
-        // Clamp distance
         r = Mathf.Clamp(r, minDistance, maxDistance);
-
-        // Update position, keeping Y fixed
         transform.position = new Vector3(sonarOrigin.position.x + r * dir.x, fixedY, sonarOrigin.position.z + r * dir.z);
+    }
+
+    public void StopMovement() => isStopped = true;
+    public void ResumeMovement() => isStopped = false;
+
+    public void Respawn()
+    {
+        Initialize();
+        isStopped = false;
     }
 }
