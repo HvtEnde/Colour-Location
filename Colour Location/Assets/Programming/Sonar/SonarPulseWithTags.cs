@@ -11,8 +11,8 @@ public class SonarPulseWithTags : MonoBehaviour
     [SerializeField] private float maxDistance = 50f;
 
     [Header("Sequence Settings")]
-    [SerializeField] private List<AudioClip> basePart1Clips = new List<AudioClip>();
-    [SerializeField] private List<AudioClip> basePart2Clips = new List<AudioClip>();
+    private List<AudioClip> basePart1Clips = new List<AudioClip>();
+    private List<AudioClip> basePart2Clips = new List<AudioClip>();
     [SerializeField] private float sequenceClipDelay = 0.5f;
 
     [Header("Tag Audio Clips")]
@@ -22,6 +22,7 @@ public class SonarPulseWithTags : MonoBehaviour
     [SerializeField] private AudioClip clipSecundair2;
     [SerializeField] private AudioClip clipTertiair1;
     [SerializeField] private AudioClip clipTertiair2;
+
 
     private AudioSource cameraAudioSource;
 
@@ -42,8 +43,8 @@ public class SonarPulseWithTags : MonoBehaviour
             return;
         }
         if (clipPrimair1 == null || clipPrimair2 == null ||
-            clipSecundair1 == null || clipSecundair2 == null ||
-            clipTertiair1 == null || clipTertiair2 == null)
+        clipSecundair1 == null || clipSecundair2 == null ||
+        clipTertiair1 == null || clipTertiair2 == null)
         {
             Debug.LogError("Please assign all tag audio clips!");
             return;
@@ -93,7 +94,7 @@ public class SonarPulseWithTags : MonoBehaviour
                 {
                     sources[i].clip = clips[i];
                     sources[i].spatialBlend = 1f; // 3D sound for tag clips
-                    sources[i].rolloffMode = AudioRolloffMode.Logarithmic;
+                    
                 }
             }
         }
@@ -168,6 +169,7 @@ public class SonarPulseWithTags : MonoBehaviour
                         lastDelay = delay;
 
                         StartCoroutine(PlaySoundsSequentially(sources, delay));
+
                     }
                 }
             }
@@ -195,6 +197,5 @@ public class SonarPulseWithTags : MonoBehaviour
             }
         }
     }
-
 
 }

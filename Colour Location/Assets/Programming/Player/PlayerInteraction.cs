@@ -1,76 +1,76 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
-using System.Collections.Generic;
 
 public class PlayerInteraction : MonoBehaviour
 {
-    public float interactDistance = 3f;
-    public Camera playerCamera;
-    public LayerMask interactableMask;
-    public SequenceConnectionManager sequenceManager;
+    public float interactDistance = 2f;
+    public KeyCode interactKey = KeyCode.E; // PC
+    public KeyCode connectKey = KeyCode.Mouse0; // PC (LMB)
+    public string xboxInteractButton = "joystick button 2"; // X on Xbox (adjust if needed)
+    public string xboxConnectButton = "joystick button 0"; // A on Xbox (adjust if needed)
 
-    private TargetMovement selectedObject = null;
-    private List<TargetMovement> connectedObjects = new List<TargetMovement>();
+    public Transform carryPoint; // Assign in Inspector
+    private TargetMovement carriedTarget = null;
 
-    public SelectionPopupUI selectionPopupUI;
-
-
-    private void Update()
+    void Update()
     {
-        // Find closest interactable object
-        TargetMovement nearest = FindNearestInteractable();
-
-        // Interact (E or X)
-        if (nearest != null && selectedObject == null && InteractPressed())
+        // Make sure the SequenceConnectionManager singleton exists
+        if (SequenceConnectionManager.Instance == null)
         {
-            selectedObject = nearest;
-            selectedObject.StopMovement();
-            // Optionally highlight or indicate selection
+            Debug.LogError("SequenceConnectionManager.Instance is missing!");
+            return;
         }
 
-        // Connect (LMB or A)
-        if (selectedObject != null && ConnectPressed())
+        if (carriedTarget == null)
         {
-            TargetMovement target = FindNearestInteractable(exclude: selectedObject);
-            if (target != null && !connectedObjects.Contains(target))
+            // Try to interact (pick up/select)
+            if (Input.GetKeyDown(interactKey) || Input.GetKeyDown(xboxInteractButton))
             {
-                if (sequenceManager.CanConnect(target))
+                TargetMovement target = FindNearestTarget();
+                if (target != null && !target.isCarried && Vector3.Distance(transform.position, target.transform.position) <= interactDistance)
                 {
-                    connectedObjects.Add(target);
-                    sequenceManager.Connect(target);
-
-                    if (sequenceManager.IsSequenceComplete())
+                    if (SequenceConnectionManager.Instance.CanConnect(target))
                     {
-                        sequenceManager.OnSequenceCompleted();
-                        connectedObjects.Clear();
-                        selectedObject = null;
+                        carriedTarget = target;
+                        carriedTarget.PauseMovement();
+                        carriedTarget.isCarried = true;
+                        carriedTarget.transform.position = carryPoint.position;
                     }
                 }
             }
         }
-
-        // Deselect if player walks away
-        if (selectedObject != null)
+        else
         {
-            float dist = Vector3.Distance(transform.position, selectedObject.transform.position);
-            if (dist > interactDistance + 1f)
+            // Carry the object
+            carriedTarget.transform.position = carryPoint.position;
+
+            // Try to connect
+            if (Input.GetKeyDown(connectKey) || Input.GetKeyDown(xboxConnectButton))
             {
-                selectedObject.ResumeMovement();
-                selectedObject = null;
-                connectedObjects.Clear();
+                if (SequenceConnectionManager.Instance.TryConnect(carriedTarget))
+                {
+                    carriedTarget.isCarried = false;
+                    carriedTarget.ResumeMovement();
+                    carriedTarget = null;
+                }
+                else
+                {
+                    // Optional: feedback for wrong order (e.g., play error sound or show UI)
+                }
             }
         }
     }
 
-    private TargetMovement FindNearestInteractable(TargetMovement exclude = null)
+    TargetMovement FindNearestTarget()
     {
-        Collider[] hits = Physics.OverlapSphere(transform.position, interactDistance, interactableMask);
-        float minDist = float.MaxValue;
         TargetMovement nearest = null;
-        foreach (var hit in hits)
+        float minDist = Mathf.Infinity;
+
+        // Option 1: Physics-based (requires colliders on targets)
+        Collider[] hitColliders = Physics.OverlapSphere(transform.position, interactDistance);
+        foreach (var hit in hitColliders)
         {
             TargetMovement tm = hit.GetComponent<TargetMovement>();
-            if (tm != null && tm != exclude)
+            if (tm != null && !tm.isCarried)
             {
                 float dist = Vector3.Distance(transform.position, tm.transform.position);
                 if (dist < minDist)
@@ -80,21 +80,24 @@ public class PlayerInteraction : MonoBehaviour
                 }
             }
         }
+
+        // Option 2: Fallback to FindObjectsOfType if no collider-based targets found
+        if (nearest == null)
+        {
+            foreach (var tm in FindObjectsOfType<TargetMovement>())
+            {
+                if (!tm.isCarried)
+                {
+                    float dist = Vector3.Distance(transform.position, tm.transform.position);
+                    if (dist < minDist && dist <= interactDistance)
+                    {
+                        minDist = dist;
+                        nearest = tm;
+                    }
+                }
+            }
+        }
+
         return nearest;
-    }
-
-    // Input system helpers
-    private bool InteractPressed()
-    {
-        // E or X (Xbox)
-        return Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame
-            || Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame;
-    }
-
-    private bool ConnectPressed()
-    {
-        // LMB or A (Xbox)
-        return Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame
-            || Gamepad.current != null && Gamepad.current.buttonWest.wasPressedThisFrame;
     }
 }

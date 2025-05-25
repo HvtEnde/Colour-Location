@@ -2,69 +2,75 @@ using UnityEngine;
 
 public class TargetMovement : MonoBehaviour
 {
-    public Transform sonarOrigin;
-    public float speed = 2f;
-    public float minDistance = 10f;
-    public float maxDistance = 100f;
+    [Header("Movement Settings")]
+    public float moveSpeed = 3f;
+    public Vector3 movementAreaMin = new Vector3(-10, 0, -10);
+    public Vector3 movementAreaMax = new Vector3(10, 0, 10);
 
-    private Vector3 dir;
-    private float r_min;
-    private float r_max;
-    private float r;
-    private bool isMovingOutward;
-    private float fixedY;
-    private bool isStopped = false;
+    [HideInInspector] public bool isCarried = false;
 
-    public void Initialize()
+    private Vector3 startPosition;
+    private Vector3 currentTarget;
+    private bool isMoving = true;
+
+    void Awake()
     {
-        if (sonarOrigin == null) return;
-        dir = new Vector3(Random.Range(-1f, 1f), 0, Random.Range(-1f, 1f)).normalized;
-        fixedY = sonarOrigin.position.y;
-        r_min = Random.Range(minDistance, maxDistance - 50f);
-        r_max = r_min + 50f;
-        r = Random.Range(r_min, r_max);
-        isMovingOutward = r < (r_min + r_max) / 2f;
-        transform.position = new Vector3(sonarOrigin.position.x + r * dir.x, fixedY, sonarOrigin.position.z + r * dir.z);
+        startPosition = transform.position;
+        PickNewTarget();
     }
 
-    private void Start()
+    void Update()
     {
-        Initialize();
+        if (!isMoving || isCarried)
+            return;
+
+        // Move towards the current target
+        transform.position = Vector3.MoveTowards(transform.position, currentTarget, moveSpeed * Time.deltaTime);
+
+        // Pick a new target when close
+        if (Vector3.Distance(transform.position, currentTarget) < 0.1f)
+            PickNewTarget();
     }
 
-    private void Update()
+    public void PauseMovement()
     {
-        if (sonarOrigin == null || isStopped) return;
-
-        if (isMovingOutward)
-        {
-            r += speed * Time.deltaTime;
-            if (r >= r_max)
-            {
-                r = r_max;
-                isMovingOutward = false;
-            }
-        }
-        else
-        {
-            r -= speed * Time.deltaTime;
-            if (r <= r_min)
-            {
-                r = r_min;
-                isMovingOutward = true;
-            }
-        }
-
-        r = Mathf.Clamp(r, minDistance, maxDistance);
-        transform.position = new Vector3(sonarOrigin.position.x + r * dir.x, fixedY, sonarOrigin.position.z + r * dir.z);
+        isMoving = false;
     }
 
-    public void StopMovement() => isStopped = true;
-    public void ResumeMovement() => isStopped = false;
+    public void ResumeMovement()
+    {
+        isMoving = true;
+    }
 
     public void Respawn()
     {
-        Initialize();
-        isStopped = false;
+        // Reset to a random position within the movement area
+        transform.position = new Vector3(
+            Random.Range(movementAreaMin.x, movementAreaMax.x),
+            startPosition.y,
+            Random.Range(movementAreaMin.z, movementAreaMax.z)
+        );
+        isCarried = false;
+        ResumeMovement();
+        PickNewTarget();
+    }
+
+    private void PickNewTarget()
+    {
+        currentTarget = new Vector3(
+            Random.Range(movementAreaMin.x, movementAreaMax.x),
+            startPosition.y,
+            Random.Range(movementAreaMin.z, movementAreaMax.z)
+        );
+    }
+
+    // Visualize movement area in Scene view
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireCube(
+            (movementAreaMin + movementAreaMax) / 2,
+            movementAreaMax - movementAreaMin
+        );
     }
 }
