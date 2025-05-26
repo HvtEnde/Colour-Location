@@ -1,62 +1,93 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerInteraction : MonoBehaviour
 {
     public float interactDistance = 2f;
-    public KeyCode interactKey = KeyCode.E; // PC
-    public KeyCode connectKey = KeyCode.Mouse0; // PC (LMB)
-    public string xboxInteractButton = "joystick button 2"; // X on Xbox (adjust if needed)
-    public string xboxConnectButton = "joystick button 0"; // A on Xbox (adjust if needed)
-
     public Transform carryPoint; // Assign in Inspector
     private TargetMovement carriedTarget = null;
 
+    private PlayerInput playerInput;
+    private InputAction interactAction;
+    private InputAction connectAction;
+
+    void Awake()
+    {
+        playerInput = GetComponent<PlayerInput>();
+        if (playerInput != null)
+        {
+            interactAction = playerInput.actions["Interact"];
+            connectAction = playerInput.actions["Connect"];
+        }
+        else
+        {
+            Debug.LogError("PlayerInput component missing!");
+        }
+    }
+
+    void OnEnable()
+    {
+        if (interactAction != null) interactAction.performed += OnInteract;
+        if (connectAction != null) connectAction.performed += OnConnect;
+    }
+
+    void OnDisable()
+    {
+        if (interactAction != null) interactAction.performed -= OnInteract;
+        if (connectAction != null) connectAction.performed -= OnConnect;
+    }
+
     void Update()
     {
-        // Make sure the SequenceConnectionManager singleton exists
+        // Carry the object if one is picked up
+        if (carriedTarget != null)
+        {
+            carriedTarget.transform.position = carryPoint.position;
+        }
+    }
+
+    private void OnInteract(InputAction.CallbackContext ctx)
+    {
+        if (carriedTarget != null) return;
+
         if (SequenceConnectionManager.Instance == null)
         {
             Debug.LogError("SequenceConnectionManager.Instance is missing!");
             return;
         }
 
-        if (carriedTarget == null)
+        TargetMovement target = FindNearestTarget();
+        if (target != null && !target.isCarried && Vector3.Distance(transform.position, target.transform.position) <= interactDistance)
         {
-            // Try to interact (pick up/select)
-            if (Input.GetKeyDown(interactKey) || Input.GetKeyDown(xboxInteractButton))
+            if (SequenceConnectionManager.Instance.CanConnect(target))
             {
-                TargetMovement target = FindNearestTarget();
-                if (target != null && !target.isCarried && Vector3.Distance(transform.position, target.transform.position) <= interactDistance)
-                {
-                    if (SequenceConnectionManager.Instance.CanConnect(target))
-                    {
-                        carriedTarget = target;
-                        carriedTarget.PauseMovement();
-                        carriedTarget.isCarried = true;
-                        carriedTarget.transform.position = carryPoint.position;
-                    }
-                }
+                carriedTarget = target;
+                carriedTarget.PauseMovement();
+                carriedTarget.isCarried = true;
+                carriedTarget.transform.position = carryPoint.position;
             }
+        }
+    }
+
+    private void OnConnect(InputAction.CallbackContext ctx)
+    {
+        if (carriedTarget == null) return;
+
+        if (SequenceConnectionManager.Instance == null)
+        {
+            Debug.LogError("SequenceConnectionManager.Instance is missing!");
+            return;
+        }
+
+        if (SequenceConnectionManager.Instance.TryConnect(carriedTarget))
+        {
+            carriedTarget.isCarried = false;
+            carriedTarget.ResumeMovement();
+            carriedTarget = null;
         }
         else
         {
-            // Carry the object
-            carriedTarget.transform.position = carryPoint.position;
-
-            // Try to connect
-            if (Input.GetKeyDown(connectKey) || Input.GetKeyDown(xboxConnectButton))
-            {
-                if (SequenceConnectionManager.Instance.TryConnect(carriedTarget))
-                {
-                    carriedTarget.isCarried = false;
-                    carriedTarget.ResumeMovement();
-                    carriedTarget = null;
-                }
-                else
-                {
-                    // Optional: feedback for wrong order (e.g., play error sound or show UI)
-                }
-            }
+            // Optional: feedback for wrong order
         }
     }
 
@@ -65,7 +96,6 @@ public class PlayerInteraction : MonoBehaviour
         TargetMovement nearest = null;
         float minDist = Mathf.Infinity;
 
-        // Option 1: Physics-based (requires colliders on targets)
         Collider[] hitColliders = Physics.OverlapSphere(transform.position, interactDistance);
         foreach (var hit in hitColliders)
         {
@@ -81,7 +111,6 @@ public class PlayerInteraction : MonoBehaviour
             }
         }
 
-        // Option 2: Fallback to FindObjectsOfType if no collider-based targets found
         if (nearest == null)
         {
             foreach (var tm in FindObjectsOfType<TargetMovement>())

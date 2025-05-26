@@ -1,52 +1,46 @@
 using UnityEngine;
-using UnityEngine.InputSystem; // For the new Input System
+using UnityEngine.InputSystem;
 
+[RequireComponent(typeof(CharacterController))]
 public class PlayerMovement : MonoBehaviour
 {
-    public float moveSpeed = 5f;
+    public float speed = 5f;
     public float lookSensitivity = 2f;
     public Transform cameraTransform;
 
-    private PlayerInputActions inputActions; // The generated class instance
-    private Vector2 moveInput;
-    private Vector2 lookInput;
-    private float cameraPitch = 0f;
+    private CharacterController controller;
+    private float rotationX = 0f;
+    private Vector2 moveInput = Vector2.zero;
+    private Vector2 lookInput = Vector2.zero;
 
-    private void Awake()
+    void Awake()
     {
-        inputActions = new PlayerInputActions();
-        inputActions.Player.Enable(); // Enable your action map (e.g., "Player")
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        controller = GetComponent<CharacterController>();
     }
 
-    private void OnEnable()
+    // Called automatically by PlayerInput for "Move" action
+    public void OnMove(InputAction.CallbackContext context)
     {
-        inputActions.Player.Move.performed += ctx => moveInput = ctx.ReadValue<Vector2>();
-        inputActions.Player.Move.canceled += ctx => moveInput = Vector2.zero;
-        inputActions.Player.Look.performed += ctx => lookInput = ctx.ReadValue<Vector2>();
-        inputActions.Player.Look.canceled += ctx => lookInput = Vector2.zero;
+        moveInput = context.ReadValue<Vector2>();
     }
 
-    private void OnDisable()
+    // Called automatically by PlayerInput for "Look" action
+    public void OnLook(InputAction.CallbackContext context)
     {
-        inputActions.Player.Move.performed -= ctx => moveInput = ctx.ReadValue<Vector2>();
-        inputActions.Player.Move.canceled -= ctx => moveInput = Vector2.zero;
-        inputActions.Player.Look.performed -= ctx => lookInput = ctx.ReadValue<Vector2>();
-        inputActions.Player.Look.canceled -= ctx => lookInput = Vector2.zero;
-        inputActions.Player.Disable();
+        lookInput = context.ReadValue<Vector2>();
     }
 
-    private void Update()
+    void Update()
     {
-        // Movement
-        Vector3 move = (transform.right * moveInput.x + transform.forward * moveInput.y) * moveSpeed * Time.deltaTime;
-        transform.position += move;
+        // --- MOVEMENT ---
+        Vector3 move = transform.right * moveInput.x + transform.forward * moveInput.y;
+        controller.Move(move * speed * Time.deltaTime);
 
-        // Look
+        // --- LOOK ---
         transform.Rotate(Vector3.up * lookInput.x * lookSensitivity);
-        cameraPitch -= lookInput.y * lookSensitivity;
-        cameraPitch = Mathf.Clamp(cameraPitch, -80f, 80f);
-        cameraTransform.localEulerAngles = new Vector3(cameraPitch, 0f, 0f);
+
+        rotationX -= lookInput.y * lookSensitivity;
+        rotationX = Mathf.Clamp(rotationX, -80f, 80f);
+        cameraTransform.localRotation = Quaternion.Euler(rotationX, 0f, 0f);
     }
 }

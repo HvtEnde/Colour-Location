@@ -13,6 +13,9 @@ public class TargetMovement : MonoBehaviour
     private Vector3 currentTarget;
     private bool isMoving = true;
 
+    // Reference to SonarOrigin for distance calculation
+    [HideInInspector] public Transform sonarOrigin;
+
     void Awake()
     {
         startPosition = transform.position;
@@ -24,27 +27,17 @@ public class TargetMovement : MonoBehaviour
         if (!isMoving || isCarried)
             return;
 
-        // Move towards the current target
         transform.position = Vector3.MoveTowards(transform.position, currentTarget, moveSpeed * Time.deltaTime);
 
-        // Pick a new target when close
         if (Vector3.Distance(transform.position, currentTarget) < 0.1f)
             PickNewTarget();
     }
 
-    public void PauseMovement()
-    {
-        isMoving = false;
-    }
-
-    public void ResumeMovement()
-    {
-        isMoving = true;
-    }
+    public void PauseMovement() => isMoving = false;
+    public void ResumeMovement() => isMoving = true;
 
     public void Respawn()
     {
-        // Reset to a random position within the movement area
         transform.position = new Vector3(
             Random.Range(movementAreaMin.x, movementAreaMax.x),
             startPosition.y,
@@ -53,6 +46,14 @@ public class TargetMovement : MonoBehaviour
         isCarried = false;
         ResumeMovement();
         PickNewTarget();
+    }
+
+    public void PlayClipWithDistance(AudioClip clip, float maxDistance = 20f)
+    {
+        if (clip == null || sonarOrigin == null) return;
+        float dist = Vector3.Distance(transform.position, sonarOrigin.position);
+        float volume = Mathf.Clamp01(1f - (dist / maxDistance));
+        AudioSource.PlayClipAtPoint(clip, transform.position, volume);
     }
 
     private void PickNewTarget()
@@ -64,7 +65,6 @@ public class TargetMovement : MonoBehaviour
         );
     }
 
-    // Visualize movement area in Scene view
     void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.cyan;
