@@ -46,7 +46,7 @@ public class PlayerInteraction : MonoBehaviour
         }
     }
 
-    private void OnInteract(InputAction.CallbackContext ctx)
+    public void OnInteract(InputAction.CallbackContext ctx)
     {
         if (carriedTarget != null) return;
 
@@ -69,7 +69,7 @@ public class PlayerInteraction : MonoBehaviour
         }
     }
 
-    private void OnConnect(InputAction.CallbackContext ctx)
+    public void OnConnect(InputAction.CallbackContext ctx)
     {
         if (carriedTarget == null) return;
 
