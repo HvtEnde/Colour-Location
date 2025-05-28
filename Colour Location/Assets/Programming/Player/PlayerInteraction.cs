@@ -3,7 +3,7 @@ using UnityEngine.InputSystem;
 
 public class PlayerInteraction : MonoBehaviour
 {
-    public float interactDistance = 2f;
+    public float interactDistance = 2f; // Pas dit aan in de Inspector
     public Transform carryPoint; // Assign in Inspector
     private TargetMovement carriedTarget = null;
 
@@ -39,7 +39,6 @@ public class PlayerInteraction : MonoBehaviour
 
     void Update()
     {
-        // Carry the object if one is picked up
         if (carriedTarget != null)
         {
             carriedTarget.transform.position = carryPoint.position;
@@ -48,6 +47,7 @@ public class PlayerInteraction : MonoBehaviour
 
     public void OnInteract(InputAction.CallbackContext ctx)
     {
+        Debug.Log("Interact triggered");
         if (carriedTarget != null) return;
 
         if (SequenceConnectionManager.Instance == null)
@@ -59,18 +59,25 @@ public class PlayerInteraction : MonoBehaviour
         TargetMovement target = FindNearestTarget();
         if (target != null && !target.isCarried && Vector3.Distance(transform.position, target.transform.position) <= interactDistance)
         {
+            Debug.Log($"Found target: {target.gameObject.name}");
             if (SequenceConnectionManager.Instance.CanConnect(target))
             {
                 carriedTarget = target;
                 carriedTarget.PauseMovement();
                 carriedTarget.isCarried = true;
                 carriedTarget.transform.position = carryPoint.position;
+                Debug.Log("Target picked up");
             }
+        }
+        else
+        {
+            Debug.Log("No valid target found within distance");
         }
     }
 
     public void OnConnect(InputAction.CallbackContext ctx)
     {
+        Debug.Log("Connect triggered");
         if (carriedTarget == null) return;
 
         if (SequenceConnectionManager.Instance == null)
@@ -107,22 +114,6 @@ public class PlayerInteraction : MonoBehaviour
                 {
                     minDist = dist;
                     nearest = tm;
-                }
-            }
-        }
-
-        if (nearest == null)
-        {
-            foreach (var tm in FindObjectsOfType<TargetMovement>())
-            {
-                if (!tm.isCarried)
-                {
-                    float dist = Vector3.Distance(transform.position, tm.transform.position);
-                    if (dist < minDist && dist <= interactDistance)
-                    {
-                        minDist = dist;
-                        nearest = tm;
-                    }
                 }
             }
         }

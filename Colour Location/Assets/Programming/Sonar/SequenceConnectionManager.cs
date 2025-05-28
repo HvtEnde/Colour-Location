@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
+using System.Collections;
 using System.Collections.Generic;
 
 public class SequenceConnectionManager : MonoBehaviour
@@ -15,11 +17,15 @@ public class SequenceConnectionManager : MonoBehaviour
     [Header("Tertiair Clips (0: base1, 1: base2, 2: extra)")]
     public List<AudioClip> tertiairClips = new List<AudioClip>();
 
+    [Header("Sequence Settings")]
+    public float clipDelay = 1f; // Aanpasbare vertraging in seconden
+
     private List<string> requiredOrder = new List<string> { "Primair", "Secundair", "Tertiair" };
     private int currentStep = 0;
     private List<TargetMovement> allTargets = new List<TargetMovement>();
     private List<TargetMovement> connectedTargets = new List<TargetMovement>();
     private bool extraClipsUnlocked = false;
+    public Gamepad gamepad;
 
     void Awake()
     {
@@ -31,7 +37,7 @@ public class SequenceConnectionManager : MonoBehaviour
 
     void Start()
     {
-        // Find all targets and assign SonarOrigin reference
+        // Vind alle targets en wijs SonarOrigin toe
         foreach (string tag in requiredOrder)
         {
             GameObject[] objs = GameObject.FindGameObjectsWithTag(tag);
@@ -42,11 +48,14 @@ public class SequenceConnectionManager : MonoBehaviour
                 {
                     allTargets.Add(tm);
                     tm.sonarOrigin = sonarOrigin;
+                    tm.InitializePosition();  // Zet de startpositie
                 }
             }
         }
 
-        // Play the sonar sequence at the start
+        gamepad = Gamepad.current; // Initialiseer de gamepad voor rumble
+
+        // Speel de sonar sequence aan het begin
         StartCoroutine(PlaySonarSequence());
     }
 
@@ -101,50 +110,53 @@ public class SequenceConnectionManager : MonoBehaviour
             AudioSource.PlayClipAtPoint(clip, tm.transform.position, 1f);
     }
 
-    /// <summary>
-    /// Plays the sonar sequence at the SonarOrigin and triggers all objects to play their corresponding sound.
-    /// </summary>
-    private System.Collections.IEnumerator PlaySonarSequence()
+    private IEnumerator PlaySonarSequence()
     {
-        // Randomize order for base part 1 and base part 2
         List<string> tagsPart1 = new List<string>(requiredOrder);
         List<string> tagsPart2 = new List<string>(requiredOrder);
         Shuffle(tagsPart1);
         Shuffle(tagsPart2);
 
-        // Play base part 1
         for (int i = 0; i < tagsPart1.Count; i++)
         {
             string tag = tagsPart1[i];
             AudioClip clip = GetClipForTag(tag, 0);
             if (clip != null)
-                AudioSource.PlayClipAtPoint(clip, sonarOrigin.position, 1f);
-
-            foreach (var tm in allTargets)
             {
-                if (tm != null && tm.gameObject.tag == tag)
-                    tm.PlayClipWithDistance(clip);
+                AudioSource.PlayClipAtPoint(clip, sonarOrigin.position, 1f);
+                if (gamepad != null) Rumble(0.5f, 0.5f, clip.length); // Rumble voor sequence
+                foreach (var tm in allTargets)
+                {
+                    if (tm != null && tm.gameObject.tag == tag)
+                    {
+                        float distance = Vector3.Distance(tm.transform.position, sonarOrigin.position);
+                        float delay = distance / 10f;
+                        tm.StartCoroutine(tm.PlayClipWithDistanceDelayed(clip, delay));
+                    }
+                }
+                yield return new WaitForSeconds(clip.length + clipDelay); // Gebruik clipDelay
             }
-            // Wait for the clip to finish before playing the next
-            if (clip != null)
-                yield return new WaitForSeconds(clip.length);
         }
 
-        // Play base part 2
         for (int i = 0; i < tagsPart2.Count; i++)
         {
             string tag = tagsPart2[i];
             AudioClip clip = GetClipForTag(tag, 1);
             if (clip != null)
-                AudioSource.PlayClipAtPoint(clip, sonarOrigin.position, 1f);
-
-            foreach (var tm in allTargets)
             {
-                if (tm != null && tm.gameObject.tag == tag)
-                    tm.PlayClipWithDistance(clip);
+                AudioSource.PlayClipAtPoint(clip, sonarOrigin.position, 1f);
+                if (gamepad != null) Rumble(0.5f, 0.5f, clip.length); // Rumble voor sequence
+                foreach (var tm in allTargets)
+                {
+                    if (tm != null && tm.gameObject.tag == tag)
+                    {
+                        float distance = Vector3.Distance(tm.transform.position, sonarOrigin.position);
+                        float delay = distance / 10f;
+                        tm.StartCoroutine(tm.PlayClipWithDistanceDelayed(clip, delay));
+                    }
+                }
+                yield return new WaitForSeconds(clip.length + clipDelay); // Gebruik clipDelay
             }
-            if (clip != null)
-                yield return new WaitForSeconds(clip.length);
         }
     }
 
@@ -168,5 +180,21 @@ public class SequenceConnectionManager : MonoBehaviour
             list[i] = list[j];
             list[j] = temp;
         }
+    }
+
+    public void Rumble(float lowFrequency, float highFrequency, float duration)
+    {
+        if (gamepad != null)
+        {
+            gamepad.SetMotorSpeeds(lowFrequency, highFrequency);
+            StartCoroutine(StopRumbleAfter(duration));
+        }
+    }
+
+    private IEnumerator StopRumbleAfter(float duration)
+    {
+        yield return new WaitForSeconds(duration);
+        if (gamepad != null)
+            gamepad.SetMotorSpeeds(0, 0);
     }
 }

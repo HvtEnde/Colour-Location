@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class TargetMovement : MonoBehaviour
 {
@@ -8,13 +9,11 @@ public class TargetMovement : MonoBehaviour
     public Vector3 movementAreaMax = new Vector3(10, 0, 10);
 
     [HideInInspector] public bool isCarried = false;
+    [HideInInspector] public Transform sonarOrigin;
 
     private Vector3 startPosition;
     private Vector3 currentTarget;
     private bool isMoving = true;
-
-    // Reference to SonarOrigin for distance calculation
-    [HideInInspector] public Transform sonarOrigin;
 
     void Awake()
     {
@@ -47,6 +46,34 @@ public class TargetMovement : MonoBehaviour
         ResumeMovement();
         PickNewTarget();
     }
+    public void InitializePosition()
+    {
+        if (sonarOrigin == null)
+        {
+            Debug.LogError("SonarOrigin not set!");
+            return;
+        }
+
+        int maxAttempts = 100;
+        for (int i = 0; i < maxAttempts; i++)
+        {
+            Vector3 randomPos = new Vector3(
+                Random.Range(movementAreaMin.x, movementAreaMax.x),
+                startPosition.y,
+                Random.Range(movementAreaMin.z, movementAreaMax.z)
+            );
+
+            if (Vector3.Distance(randomPos, sonarOrigin.position) <= 100f)
+            {
+                transform.position = randomPos;
+                return;
+            }
+        }
+
+        // Fallback als er geen geschikte positie wordt gevonden
+        transform.position = sonarOrigin.position;
+        Debug.LogWarning("Kon geen plek vinden binnen 100 units, spawn bij SonarOrigin.");
+    }
 
     public void PlayClipWithDistance(AudioClip clip, float maxDistance = 20f)
     {
@@ -54,6 +81,19 @@ public class TargetMovement : MonoBehaviour
         float dist = Vector3.Distance(transform.position, sonarOrigin.position);
         float volume = Mathf.Clamp01(1f - (dist / maxDistance));
         AudioSource.PlayClipAtPoint(clip, transform.position, volume);
+
+        // Rumble effect based on distance to sonarOrigin
+        if (SequenceConnectionManager.Instance != null && SequenceConnectionManager.Instance.gamepad != null)
+        {
+            float intensity = Mathf.Clamp01(1f - (dist / maxDistance));
+            SequenceConnectionManager.Instance.Rumble(intensity, intensity, clip.length); // Rumble voor de duur van de clip
+        }
+    }
+
+    public IEnumerator PlayClipWithDistanceDelayed(AudioClip clip, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        PlayClipWithDistance(clip);
     }
 
     private void PickNewTarget()

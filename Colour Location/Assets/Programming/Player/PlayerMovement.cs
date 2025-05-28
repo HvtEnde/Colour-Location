@@ -28,7 +28,6 @@ public class PlayerMovement : MonoBehaviour
     // Called by the Input System for the "Move" action
     public void OnMove(InputAction.CallbackContext context)
     {
-        // Use performed and canceled to ensure proper zeroing
         if (context.performed || context.canceled)
             moveInput = context.ReadValue<Vector2>();
     }
@@ -36,9 +35,9 @@ public class PlayerMovement : MonoBehaviour
     // Called by the Input System for the "Look" action
     public void OnLook(InputAction.CallbackContext context)
     {
-        lookInput = context.ReadValue<Vector2>();
+        if (context.performed || context.canceled)
+            lookInput = context.ReadValue<Vector2>();
     }
-
 
     void Update()
     {
@@ -47,10 +46,7 @@ public class PlayerMovement : MonoBehaviour
         controller.Move(move * speed * Time.deltaTime);
 
         // --- LOOK ---
-        // Horizontal rotation (player body)
         transform.Rotate(Vector3.up * lookInput.x * lookSensitivity);
-
-        // Vertical rotation (camera, clamped)
         rotationX -= lookInput.y * lookSensitivity;
         rotationX = Mathf.Clamp(rotationX, -80f, 80f);
         cameraTransform.localRotation = Quaternion.Euler(rotationX, 0f, 0f);
