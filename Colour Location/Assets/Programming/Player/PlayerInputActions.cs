@@ -68,7 +68,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""c2b34063-6c6c-4484-a17e-be5f34c97a89"",
-                    ""path"": ""<XInputController>/rightStick"",
+                    ""path"": ""<XInputController>/leftStick"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -134,7 +134,7 @@ public partial class @PlayerInputActions: IInputActionCollection2, IDisposable
                 {
                     ""name"": """",
                     ""id"": ""dcb2d3d7-b85d-4a4b-87b8-d5c713de9c25"",
-                    ""path"": ""<XInputController>/leftStick"",
+                    ""path"": ""<XInputController>/rightStick"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",

@@ -25,14 +25,12 @@ public class PlayerMovement : MonoBehaviour
         Cursor.visible = false;
     }
 
-    // Called by the Input System for the "Move" action
     public void OnMove(InputAction.CallbackContext context)
     {
         if (context.performed || context.canceled)
             moveInput = context.ReadValue<Vector2>();
     }
 
-    // Called by the Input System for the "Look" action
     public void OnLook(InputAction.CallbackContext context)
     {
         if (context.performed || context.canceled)
@@ -41,11 +39,9 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
-        // --- MOVEMENT ---
         Vector3 move = transform.right * moveInput.x + transform.forward * moveInput.y;
         controller.Move(move * speed * Time.deltaTime);
 
-        // --- LOOK ---
         transform.Rotate(Vector3.up * lookInput.x * lookSensitivity);
         rotationX -= lookInput.y * lookSensitivity;
         rotationX = Mathf.Clamp(rotationX, -80f, 80f);

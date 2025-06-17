@@ -3,121 +3,108 @@ using UnityEngine.InputSystem;
 
 public class PlayerInteraction : MonoBehaviour
 {
-    public float interactDistance = 2f; // Pas dit aan in de Inspector
-    public Transform carryPoint; // Assign in Inspector
+    public float interactDistance = 20f;
+    public Transform carryPoint;
     private TargetMovement carriedTarget = null;
-
-    private PlayerInput playerInput;
-    private InputAction interactAction;
-    private InputAction connectAction;
+    public AudioClip successClip;
+    private AudioSource playerAudioSource;
+    private SequenceConnectionManager sequenceManager;
+    
+    public PlayerInput playerInput;
 
     void Awake()
     {
-        playerInput = GetComponent<PlayerInput>();
-        if (playerInput != null)
-        {
-            interactAction = playerInput.actions["Interact"];
-            connectAction = playerInput.actions["Connect"];
-        }
+        
+        if (playerInput == null)
+            Debug.LogError("PlayerInput component missing!");
+
+        playerAudioSource = gameObject.AddComponent<AudioSource>();
+        if (playerAudioSource == null)
+            Debug.LogError("Failed to add AudioSource component!");
         else
         {
-            Debug.LogError("PlayerInput component missing!");
+            playerAudioSource.spatialBlend = 0f;
+            playerAudioSource.playOnAwake = false;
         }
-    }
 
-    void OnEnable()
-    {
-        if (interactAction != null) interactAction.performed += OnInteract;
-        if (connectAction != null) connectAction.performed += OnConnect;
-    }
+        sequenceManager = FindObjectOfType<SequenceConnectionManager>();
+        if (sequenceManager == null)
+        {
+            Debug.LogError("SequenceConnectionManager niet gevonden in scène!");
+        }
 
-    void OnDisable()
-    {
-        if (interactAction != null) interactAction.performed -= OnInteract;
-        if (connectAction != null) connectAction.performed -= OnConnect;
+        if (carryPoint == null)
+            Debug.LogWarning("CarryPoint is not assigned in Inspector!");
     }
 
     void Update()
     {
-        if (carriedTarget != null)
+        if (carriedTarget != null && carryPoint != null)
         {
             carriedTarget.transform.position = carryPoint.position;
+            carriedTarget.PauseMovement();
         }
     }
 
-    public void OnInteract(InputAction.CallbackContext ctx)
+    public void OnInteract(InputAction.CallbackContext context)
     {
-        Debug.Log("Interact triggered");
-        if (carriedTarget != null) return;
-
-        if (SequenceConnectionManager.Instance == null)
+        if (context.performed)
         {
-            Debug.LogError("SequenceConnectionManager.Instance is missing!");
-            return;
-        }
+            Debug.Log("(1) Context Performed");
 
-        TargetMovement target = FindNearestTarget();
-        if (target != null && !target.isCarried && Vector3.Distance(transform.position, target.transform.position) <= interactDistance)
-        {
-            Debug.Log($"Found target: {target.gameObject.name}");
-            if (SequenceConnectionManager.Instance.CanConnect(target))
+            if (carriedTarget == null)
             {
-                carriedTarget = target;
-                carriedTarget.PauseMovement();
-                carriedTarget.isCarried = true;
-                carriedTarget.transform.position = carryPoint.position;
-                Debug.Log("Target picked up");
-            }
-        }
-        else
-        {
-            Debug.Log("No valid target found within distance");
-        }
-    }
+                Debug.Log("(2) No Carry");
 
-    public void OnConnect(InputAction.CallbackContext ctx)
-    {
-        Debug.Log("Connect triggered");
-        if (carriedTarget == null) return;
-
-        if (SequenceConnectionManager.Instance == null)
-        {
-            Debug.LogError("SequenceConnectionManager.Instance is missing!");
-            return;
-        }
-
-        if (SequenceConnectionManager.Instance.TryConnect(carriedTarget))
-        {
-            carriedTarget.isCarried = false;
-            carriedTarget.ResumeMovement();
-            carriedTarget = null;
-        }
-        else
-        {
-            // Optional: feedback for wrong order
-        }
-    }
-
-    TargetMovement FindNearestTarget()
-    {
-        TargetMovement nearest = null;
-        float minDist = Mathf.Infinity;
-
-        Collider[] hitColliders = Physics.OverlapSphere(transform.position, interactDistance);
-        foreach (var hit in hitColliders)
-        {
-            TargetMovement tm = hit.GetComponent<TargetMovement>();
-            if (tm != null && !tm.isCarried)
-            {
-                float dist = Vector3.Distance(transform.position, tm.transform.position);
-                if (dist < minDist)
+                Vector2 mousePosition = Mouse.current.position.ReadValue();
+                Ray ray = Camera.main.ScreenPointToRay(mousePosition);
+                if (Physics.Raycast(ray, out RaycastHit hit, interactDistance))
                 {
-                    minDist = dist;
-                    nearest = tm;
+                    Debug.Log("(3) Raycast");
+                    Debug.DrawRay(transform.position, hit.point, Color.red, 10f);
+
+                    TargetMovement tm = hit.collider.GetComponent<TargetMovement>();
+                    if (tm != null && !tm.isConnected)
+                    {
+                        carriedTarget = tm;
+                        carriedTarget.OnPickedUp();
+                        carriedTarget.PauseMovement();
+                        Debug.Log($"Oppakt: {tm.gameObject.tag}");
+                    }
                 }
             }
         }
+    }
 
-        return nearest;
+    public void OnConnect(InputAction.CallbackContext context)
+    {
+        if (context.performed && carriedTarget != null && sequenceManager != null)
+        {
+            if (sequenceManager.TryConnect(carriedTarget))
+            {
+                carriedTarget.OnReleased();
+                carriedTarget = null;
+                PlaySuccessAudio();
+                Debug.Log("Verbinding gelukt!");
+            }
+            else
+            {
+                Debug.Log("Verbinding mislukt!");
+            }
+        }
+    }
+
+    public void PlaySuccessAudio()
+    {
+        if (successClip != null && playerAudioSource != null)
+        {
+            playerAudioSource.clip = successClip;
+            playerAudioSource.Play();
+            Debug.Log("Success audio playing at player");
+        }
+        else
+        {
+            Debug.LogWarning("Success clip or player audio source not assigned!");
+        }
     }
 }
