@@ -2,12 +2,12 @@ using UnityEngine;
 using System.Collections;
 using UnityEngine.InputSystem;
 
-public class TargetMovement : MonoBehaviour
+public class Interactable : MonoBehaviour
 {
     [Header("Movement Settings")]
     public float moveSpeed = 3f;
     public float maxDistanceFromOrigin = 75f;
-    public Transform sonarOrigin;
+    public Transform moveReferencePoint;
     private Vector3 startPosition;
     private float targetDistance;
     private bool movingAway = true;
@@ -102,7 +102,7 @@ public class TargetMovement : MonoBehaviour
             return;
         }
 
-        Vector3 targetPosition = sonarOrigin.position + (movementDirection * targetDistance);
+        Vector3 targetPosition = moveReferencePoint.position + (movementDirection * targetDistance);
         transform.position = Vector3.MoveTowards(transform.position, targetPosition, moveSpeed * Time.deltaTime);
 
         if (Vector3.Distance(transform.position, targetPosition) < 0.1f)
@@ -178,15 +178,15 @@ public class TargetMovement : MonoBehaviour
 
     public void InitializePosition()
     {
-        if (sonarOrigin == null) return;
+        if (moveReferencePoint == null) return;
 
         int maxAttempts = 100;
         for (int i = 0; i < maxAttempts; i++)
         {
             float randomDistance = Random.Range(-maxDistanceFromOrigin, maxDistanceFromOrigin);
-            Vector3 randomPos = sonarOrigin.position + (movementDirection * randomDistance);
+            Vector3 randomPos = moveReferencePoint.position + (movementDirection * randomDistance);
 
-            if (Vector3.Distance(randomPos, sonarOrigin.position) <= maxDistanceFromOrigin)
+            if (Vector3.Distance(randomPos, moveReferencePoint.position) <= maxDistanceFromOrigin)
             {
                 transform.position = randomPos;
                 targetDistance = randomDistance;
@@ -194,7 +194,7 @@ public class TargetMovement : MonoBehaviour
             }
         }
 
-        transform.position = sonarOrigin.position;
+        transform.position = moveReferencePoint.position;
         targetDistance = 0f;
         Debug.LogWarning($"Could not find a spot within {maxDistanceFromOrigin} units for {gameObject.name}, spawning at SonarOrigin.");
     }
@@ -272,7 +272,7 @@ public class TargetMovement : MonoBehaviour
     void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.cyan;
-        Vector3 lineEnd = sonarOrigin.position + (movementDirection * maxDistanceFromOrigin);
-        Gizmos.DrawLine(sonarOrigin.position, lineEnd);
+        Vector3 lineEnd = moveReferencePoint.position + (movementDirection * maxDistanceFromOrigin);
+        Gizmos.DrawLine(moveReferencePoint.position, lineEnd);
     }
 }

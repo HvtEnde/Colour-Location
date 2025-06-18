@@ -5,7 +5,7 @@ public class PlayerInteraction : MonoBehaviour
 {
     public float interactDistance = 20f;
     public Transform carryPoint;
-    private TargetMovement carriedTarget = null;
+    private Interactable carriedTarget = null;
     public AudioClip successClip;
     private AudioSource playerAudioSource;
     private SequenceConnectionManager sequenceManager;
@@ -63,7 +63,7 @@ public class PlayerInteraction : MonoBehaviour
                     Debug.Log("(3) Raycast");
                     Debug.DrawRay(transform.position, hit.point, Color.red, 10f);
 
-                    TargetMovement tm = hit.collider.GetComponent<TargetMovement>();
+                    Interactable tm = hit.collider.GetComponent<Interactable>();
                     if (tm != null && !tm.isConnected)
                     {
                         carriedTarget = tm;

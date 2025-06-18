@@ -8,7 +8,7 @@ public class SequenceConnectionManager : MonoBehaviour
     public static SequenceConnectionManager Instance { get; private set; }
 
     [Header("Sonar Origin")]
-    public Transform sonarOrigin;
+    public Transform moveReferencePoint;
     public AudioSource sonarAudioSource;
 
     [Header("Primair Clips")]
@@ -29,8 +29,8 @@ public class SequenceConnectionManager : MonoBehaviour
 
     private List<string> requiredOrder = new List<string> { "Primair", "Secundair", "Tertiair" };
     private int currentStep = 0;
-    private List<TargetMovement> allTargets = new List<TargetMovement>();
-    private List<TargetMovement> connectedTargets = new List<TargetMovement>();
+    private List<Interactable> allTargets = new List<Interactable>();
+    private List<Interactable> connectedTargets = new List<Interactable>();
     private bool extraClipsUnlocked = false;
     private PlayerInput playerInput;
     private InputAction rumbleAction;
@@ -72,31 +72,33 @@ public class SequenceConnectionManager : MonoBehaviour
 
     void Start()
     {
+        if (moveReferencePoint == null) Debug.LogError("SonarOrigin is not assigned!");
+        if (sonarAudioSource == null) Debug.LogError("SonarAudioSource is not assigned!");
+        else sonarAudioSource.spatialBlend = 0f;
+
+
         foreach (string tag in requiredOrder)
         {
             GameObject[] objs = GameObject.FindGameObjectsWithTag(tag);
-            foreach (var obj in objs)
+            foreach (GameObject obj in objs)
             {
-                TargetMovement tm = obj.GetComponent<TargetMovement>();
-                if (tm != null && !allTargets.Contains(tm))
+                Interactable interactable = obj.GetComponent<Interactable>();
+                if (interactable != null && !allTargets.Contains(interactable))
                 {
-                    allTargets.Add(tm);
-                    tm.sonarOrigin = sonarOrigin;
-                    tm.InitializePosition();
-                    tm.DisableFrequency();
+                    allTargets.Add(interactable);
+                    interactable.moveReferencePoint = moveReferencePoint;
+                    interactable.InitializePosition();
+                    interactable.DisableFrequency();
                 }
             }
         }
 
-        if (sonarOrigin == null) Debug.LogError("SonarOrigin is not assigned!");
-        if (sonarAudioSource == null) Debug.LogError("SonarAudioSource is not assigned!");
-        else sonarAudioSource.spatialBlend = 0f;
 
         sequenceLength = Mathf.Max(3, initialSequenceLength);
         StartCoroutine(PlaySequenceAndSonar(true));
     }
 
-    public bool CanConnect(TargetMovement tm)
+    public bool CanConnect(Interactable tm)
     {
         if (tm == null) return false;
         string tag = tm.gameObject.tag;
@@ -104,11 +106,11 @@ public class SequenceConnectionManager : MonoBehaviour
         return tag == requiredOrder[expectedIndex];
     }
 
-    public bool TryConnect(TargetMovement tm)
+    public bool TryConnect(Interactable tm)
     {
         if (tm == null || !CanConnect(tm) || connectedTargets.Contains(tm)) return false;
 
-        foreach (var target in allTargets)
+        foreach (Interactable target in allTargets)
         {
             target.StopTagAudio();
         }
@@ -205,7 +207,7 @@ public class SequenceConnectionManager : MonoBehaviour
         }
     }
 
-    private void PlayTagAudio(TargetMovement tm)
+    private void PlayTagAudio(Interactable tm)
     {
         AudioClip clip = GetRandomClipForTag(tm.gameObject.tag);
         if (clip != null)
@@ -224,9 +226,9 @@ public class SequenceConnectionManager : MonoBehaviour
         if (isPlayingSequence) yield break;
         isPlayingSequence = true;
 
-        foreach (var tm in allTargets)
+        foreach (Interactable interactable in allTargets)
         {
-            tm.DisableFrequency();
+            interactable.DisableFrequency();
         }
 
         if (isInitial) usedClips.Clear();
@@ -295,7 +297,7 @@ public class SequenceConnectionManager : MonoBehaviour
                 {
                     if (tm.gameObject.tag == tag && !tm.isConnected)
                     {
-                        float distance = Vector3.Distance(tm.transform.position, sonarOrigin.position);
+                        float distance = Vector3.Distance(tm.transform.position, moveReferencePoint.position);
                         float delay = distance / 10f;
                         yield return StartCoroutine(tm.PlayClipWithDistanceDelayed(usedClips[tag], delay));
                     }

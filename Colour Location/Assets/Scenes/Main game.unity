@@ -135,7 +135,7 @@ GameObject:
   - component: {fileID: 156450942}
   - component: {fileID: 156450941}
   m_Layer: 0
-  m_Name: Cube (1)
+  m_Name: MapBorder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -495,7 +495,7 @@ GameObject:
   - component: {fileID: 466843351}
   - component: {fileID: 466843350}
   m_Layer: 0
-  m_Name: Cube
+  m_Name: MapBorder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -649,7 +649,7 @@ GameObject:
   - component: {fileID: 847728190}
   - component: {fileID: 847728189}
   m_Layer: 0
-  m_Name: Cube (3)
+  m_Name: MapBorder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1174,6 +1174,8 @@ GameObject:
   - component: {fileID: 1697269717}
   - component: {fileID: 1697269719}
   - component: {fileID: 1697269720}
+  - component: {fileID: 1697269722}
+  - component: {fileID: 1697269721}
   m_Layer: 3
   m_Name: Object
   m_TagString: Primair
@@ -1260,7 +1262,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 0.1
   maxDistanceFromOrigin: 50
-  sonarOrigin: {fileID: 1765707870}
+  moveReferencePoint: {fileID: 1765707870}
   frequencyClip: {fileID: 8300000, guid: 1b81bea2143576a43af24ec3c29320d0, type: 3}
   tagClipSource: {fileID: 1697269720}
   isCarried: 0
@@ -1382,6 +1384,46 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1697269721
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1697269711}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ff515823770f3a41a6b7ef0edb19a4a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  vibrationManager: {fileID: 1765707872}
+  player: {fileID: 0}
+  sameOnBothSides: 1
+  powerLeft: 0
+  powerRight: 0
+  minRadius: 0
+  maxRadius: 2.0134227
+--- !u!135 &1697269722
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1697269711}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &1765707866
 GameObject:
   m_ObjectHideFlags: 0
@@ -1395,8 +1437,9 @@ GameObject:
   - component: {fileID: 1765707868}
   - component: {fileID: 1765707867}
   - component: {fileID: 1765707871}
+  - component: {fileID: 1765707872}
   m_Layer: 0
-  m_Name: OriginPoint
+  m_Name: MoveRefrencePoint
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1482,7 +1525,7 @@ Transform:
   m_GameObject: {fileID: 1765707866}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 47.5, y: 1, z: 43.8}
+  m_LocalPosition: {x: 47.5, y: -0.86, z: 43.8}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1584,6 +1627,18 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1765707872
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1765707866}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d62382c8ac9a7c847bd36750b4053f86, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1870250190
 GameObject:
   m_ObjectHideFlags: 0
@@ -1597,7 +1652,7 @@ GameObject:
   - component: {fileID: 1870250192}
   - component: {fileID: 1870250191}
   m_Layer: 0
-  m_Name: Cube (2)
+  m_Name: MapBorder
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1703,6 +1758,8 @@ GameObject:
   - component: {fileID: 1903601240}
   - component: {fileID: 1903601242}
   - component: {fileID: 1903601243}
+  - component: {fileID: 1903601245}
+  - component: {fileID: 1903601244}
   m_Layer: 3
   m_Name: 'Object '
   m_TagString: Secundair
@@ -1789,7 +1846,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 0.1
   maxDistanceFromOrigin: 50
-  sonarOrigin: {fileID: 1765707870}
+  moveReferencePoint: {fileID: 1765707870}
   frequencyClip: {fileID: 8300000, guid: 600b6032e575e8446ad1e9f00907ec1f, type: 3}
   tagClipSource: {fileID: 1903601243}
   isCarried: 0
@@ -1911,6 +1968,46 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1903601244
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1903601234}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ff515823770f3a41a6b7ef0edb19a4a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  vibrationManager: {fileID: 1765707872}
+  player: {fileID: 0}
+  sameOnBothSides: 1
+  powerLeft: 0
+  powerRight: 0
+  minRadius: 0
+  maxRadius: 2.0134227
+--- !u!135 &1903601245
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1903601234}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &1965505033
 GameObject:
   m_ObjectHideFlags: 0
@@ -1925,6 +2022,8 @@ GameObject:
   - component: {fileID: 1965505039}
   - component: {fileID: 1965505041}
   - component: {fileID: 1965505042}
+  - component: {fileID: 1965505044}
+  - component: {fileID: 1965505043}
   m_Layer: 3
   m_Name: Object
   m_TagString: Tertiair
@@ -2010,8 +2109,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 0.1
-  maxDistanceFromOrigin: 60
-  sonarOrigin: {fileID: 1765707870}
+  maxDistanceFromOrigin: 50
+  moveReferencePoint: {fileID: 1765707870}
   frequencyClip: {fileID: 8300000, guid: 62b427dd5772019409a2657f6482be63, type: 3}
   tagClipSource: {fileID: 1965505042}
   isCarried: 0
@@ -2133,6 +2232,46 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+--- !u!114 &1965505043
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1965505033}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7ff515823770f3a41a6b7ef0edb19a4a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  vibrationManager: {fileID: 1765707872}
+  player: {fileID: 1765707870}
+  sameOnBothSides: 1
+  powerLeft: 0
+  powerRight: 0
+  minRadius: 0
+  maxRadius: 2.013423
+--- !u!135 &1965505044
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1965505033}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &2002261882
 GameObject:
   m_ObjectHideFlags: 0
@@ -2177,7 +2316,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc4ec88054db49a49add5d74f6d943ef, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sonarOrigin: {fileID: 1765707870}
+  moveReferencePoint: {fileID: 1765707870}
   sonarAudioSource: {fileID: 1765707871}
   primairClips:
   - {fileID: 8300000, guid: 56b08b8d679222e4aa6b7e3f85908cd8, type: 3}
