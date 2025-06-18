@@ -17,14 +17,14 @@ public class VibrationObjectEditor : Editor
         EditorGUILayout.HelpBox("This is the maximum amount of vibration on the controller.\nThe Toggle allows you to configure individual vibration for the left and right side of the controller (default is same on both sides).", MessageType.Info);
         vibrationObject.sameOnBothSides = EditorGUILayout.Toggle("Same on both sides", vibrationObject.sameOnBothSides);
 
-        vibrationObject.powerLeft = EditorGUILayout.Slider("Vibration left", vibrationObject.powerLeft, 0f, 1f);
-
         if (!vibrationObject.sameOnBothSides)
         {
+            vibrationObject.powerLeft = EditorGUILayout.Slider("Vibration left", vibrationObject.powerLeft, 0f, 1f);
             vibrationObject.powerRight = EditorGUILayout.Slider("Vibration Right", vibrationObject.powerRight, 0f, 1f);
         }
         else
         {
+            vibrationObject.powerLeft = EditorGUILayout.Slider("Vibration", vibrationObject.powerLeft, 0f, 1f);
             vibrationObject.powerRight = vibrationObject.powerLeft;
         }
 
