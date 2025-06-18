@@ -7,7 +7,17 @@ public class VibrationObject : MonoBehaviour
     public VibrationManager vibrationManager;
     public Transform player;
 
+    [Header("Vibration")]
+    public bool sameOnBothSides = true;
 
+    [Range(0.0f, 1.0f)]
+    public float powerLeft;
+
+    [Range(0.0f, 1.0f)]
+    public float powerRight;
+
+
+    [Header("Object")]
     [Range(0.0f, 10.0f)]
     public float minRadius;
 
@@ -35,7 +45,7 @@ public class VibrationObject : MonoBehaviour
         {
             // NewValue = (((OldValue - OldMin) * (NewMax - NewMin)) / (OldMax - OldMin)) + NewMin
             float vibratePower = (((distance - minRadius) * (0 - 1)) / (maxRadius - minRadius)) + 1;
-            vibrationManager.Vibrate(1f, vibratePower);
+            vibrationManager.Vibrate(1f, vibratePower * powerLeft, vibratePower * powerRight);
         }
     }
 
@@ -46,21 +56,8 @@ public class VibrationObject : MonoBehaviour
 
     private void OnValidate()
     {
-
-        if (minRadius > maxRadius)
-        {
-            maxRadius = minRadius;
-        }
-
-        if (maxRadius < minRadius)
-        {
-            minRadius = maxRadius;
-        }
-
         collider = GetComponent<SphereCollider>();
         collider.radius = maxRadius;
-
-
     }
 
     private void OnDrawGizmos()
