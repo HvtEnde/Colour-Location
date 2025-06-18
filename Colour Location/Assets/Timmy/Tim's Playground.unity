@@ -592,8 +592,8 @@ MonoBehaviour:
   sameOnBothSides: 1
   powerLeft: 0
   powerRight: 0
-  minRadius: 7.068506
-  maxRadius: 10.119407
+  minRadius: 4.8528767
+  maxRadius: 8.8545265
 --- !u!135 &1564069404
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -613,7 +613,7 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 12.967315
+  m_Radius: 10.119407
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!23 &1564069405
 MeshRenderer:
