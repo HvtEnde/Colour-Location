@@ -590,10 +590,10 @@ MonoBehaviour:
   vibrationManager: {fileID: 778793393}
   player: {fileID: 100626104}
   sameOnBothSides: 1
-  powerLeft: 0
-  powerRight: 0
-  minRadius: 4.8528767
-  maxRadius: 8.8545265
+  powerLeft: 1
+  powerRight: 1
+  minRadius: 3.1461177
+  maxRadius: 11.867126
 --- !u!135 &1564069404
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -613,7 +613,7 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 10.119407
+  m_Radius: 13.10424
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!23 &1564069405
 MeshRenderer:
@@ -674,7 +674,7 @@ Transform:
   m_GameObject: {fileID: 1564069402}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 0}
+  m_LocalPosition: {x: -5.26, y: 1, z: 8.31}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

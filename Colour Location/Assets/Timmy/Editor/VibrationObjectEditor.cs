@@ -8,8 +8,15 @@ public class VibrationObjectEditor : Editor
     public override void OnInspectorGUI()
     {
 
-        
         VibrationObject vibrationObject = (VibrationObject)target;
+
+        EditorGUILayout.Space();
+        EditorGUILayout.LabelField("References", EditorStyles.boldLabel);
+        EditorGUILayout.HelpBox("Assign these manually in the Inspector before pressing Play!", MessageType.Warning);
+        vibrationObject.vibrationManager = EditorGUILayout.ObjectField("Vibration Manager", vibrationObject.vibrationManager, typeof(VibrationManager), true) as VibrationManager;
+        vibrationObject.player = EditorGUILayout.ObjectField("Vibration Manager", vibrationObject.player, typeof(Transform), true) as Transform;
+        
+
 
         EditorGUILayout.Space();
         EditorGUILayout.LabelField("Vibration", EditorStyles.boldLabel);
