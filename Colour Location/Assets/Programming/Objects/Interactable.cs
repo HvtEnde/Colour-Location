@@ -16,6 +16,8 @@ public class Interactable : MonoBehaviour
 
     [Header("Audio Settings")]
     public AudioClip frequencyClip;
+    public AudioClip pickUpClip; // Nieuwe audio voor oppakken
+    public AudioClip moveClip;   // Nieuwe audio voor spelerbeweging
     private AudioSource frequencySource;
     public AudioSource tagClipSource;
 
@@ -27,6 +29,7 @@ public class Interactable : MonoBehaviour
     private InputAction rumbleAction;
     private GameObject player;
     private SequenceConnectionManager sequenceManager;
+    private Vector3 lastPlayerPosition; // Voor bewegingsdetectie
 
     void Awake()
     {
@@ -61,6 +64,8 @@ public class Interactable : MonoBehaviour
         player = GameObject.FindWithTag("Player");
         if (player == null)
             Debug.LogWarning("No object with tag 'Player' found. Audio and rumble may not function correctly.");
+        else
+            lastPlayerPosition = player.transform.position;
 
         sequenceManager = FindObjectOfType<SequenceConnectionManager>();
         if (sequenceManager == null)
@@ -121,7 +126,6 @@ public class Interactable : MonoBehaviour
             {
                 if (!frequencySource.isPlaying) frequencySource.Play();
                 frequencySource.volume = 1f - (distanceToPlayer / 5f);
-               // Debug.Log($"Player should hear {gameObject.name} (frequency) at distance {distanceToPlayer} units.");
 
                 if (sequenceManager != null && !sequenceManager.isPlayingSequence)
                 {
@@ -133,6 +137,21 @@ public class Interactable : MonoBehaviour
                 frequencySource.volume = 0f;
                 if (frequencySource.isPlaying) frequencySource.Stop();
                 StopRumble();
+            }
+
+            // Detecteer spelerbeweging en speel moveClip af
+            if (moveClip != null && Vector3.Distance(lastPlayerPosition, player.transform.position) > 0.1f)
+            {
+                if (!tagClipSource.isPlaying || tagClipSource.clip != moveClip)
+                {
+                    tagClipSource.clip = moveClip;
+                    tagClipSource.Play();
+                }
+                lastPlayerPosition = player.transform.position;
+            }
+            else if (moveClip != null && Vector3.Distance(lastPlayerPosition, player.transform.position) <= 0.1f && tagClipSource.isPlaying && tagClipSource.clip == moveClip)
+            {
+                tagClipSource.Stop();
             }
         }
     }
@@ -146,7 +165,6 @@ public class Interactable : MonoBehaviour
             {
                 float intensity = 1f - (distanceToPlayer / 5f);
                 Gamepad.current.SetMotorSpeeds(intensity, intensity);
-                //Debug.Log($"Rumble active for {gameObject.name} with intensity {intensity}");
             }
             else
             {
@@ -255,6 +273,11 @@ public class Interactable : MonoBehaviour
         transform.localScale = originalScale * 0.5f;
         if (frequencySource != null) frequencySource.Stop();
         if (tagClipSource != null) tagClipSource.Stop();
+        if (pickUpClip != null) // Speel audio bij oppakken
+        {
+            tagClipSource.clip = pickUpClip;
+            tagClipSource.Play();
+        }
     }
 
     public void OnReleased()

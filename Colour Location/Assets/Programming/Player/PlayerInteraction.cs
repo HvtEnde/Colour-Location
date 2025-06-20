@@ -57,7 +57,8 @@ public class PlayerInteraction : MonoBehaviour
                 Debug.Log("(2) No Carry");
 
                 Vector2 mousePosition = Mouse.current.position.ReadValue();
-                Ray ray = Camera.main.ScreenPointToRay(mousePosition);
+                //Ray ray = Camera.main.ScreenPointToRay(mousePosition);
+                Ray ray = Camera.main.ScreenPointToRay(new Vector2(Screen.width / 2f, Screen.height / 2f));
                 if (Physics.Raycast(ray, out RaycastHit hit, interactDistance))
                 {
                     Debug.Log("(3) Raycast");
