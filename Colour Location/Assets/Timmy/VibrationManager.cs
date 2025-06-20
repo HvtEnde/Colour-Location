@@ -2,17 +2,26 @@ using UnityEngine;
 using XInputDotNetPure;
 using System.Collections;
 
-public class VibrationManager : MonoBehaviour {
+public class VibrationManager : MonoBehaviour
+{
 
-    void Start()
+    private float currentDistance;
+
+    private void Start()
     {
-        //Vibrate(1f, 1f, 1f);
+        ClearDistance();
     }
 
-    public void Vibrate(float duration, float powerLeft, float powerRight = -1f)
+    public void Vibrate(float distance, float duration, float powerLeft, float powerRight = -1f)
     {
+        if (distance > currentDistance)
+        {
+            return;
+        }
+        currentDistance = distance;
+
         if (powerRight == -1)
-{
+        {
             powerRight = powerLeft;
         }
         StopAllCoroutines();
@@ -29,5 +38,10 @@ public class VibrationManager : MonoBehaviour {
     public void StopVibration()
     {
         GamePad.SetVibration(PlayerIndex.One, 0f, 0f);
+    }
+
+    private void ClearDistance()
+    {
+        currentDistance = float.MaxValue;
     }
 }
